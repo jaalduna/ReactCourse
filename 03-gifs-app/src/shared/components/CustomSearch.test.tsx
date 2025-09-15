@@ -1,13 +1,6 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { CustomSearch } from "./CustomSearch";
-import * as customSearchActions from "./CustomSearch";
 
 describe("CustomSearch", () => {
   test("CustomSearch is rendered", () => {
@@ -80,7 +73,7 @@ describe("CustomSearch", () => {
 
   test("should call handleSearch when key Enter", () => {
     const onQuery = vi.fn();
-    const { container } = render(<CustomSearch onQuery={onQuery} />);
+    render(<CustomSearch onQuery={onQuery} />);
 
     const input = screen.getByPlaceholderText("buscar");
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
