@@ -1,0 +1,121 @@
+import { SkipBackIcon } from "lucide-react";
+import { isGeneratorObject } from "util/types";
+
+export interface ScrambleWordsState {
+  currentWord: string;
+  errorCounter: number;
+  guess: string;
+  isGameOver: boolean;
+  points: number;
+  skipCounter: number;
+  words: string[];
+}
+
+export type ScrambleWordsAction =
+  | { type: "SET_GUESS"; payload: string }
+  | { type: "HANDLE_GUESS" }
+  | { type: "HANDLE_SKIP" }
+  | { type: "HANDLE_PLAY_AGAIN"; payload: ScrambleWordsState };
+
+export const GAME_WORDS = [
+  "REACT",
+  "JAVASCRIPT",
+  "TYPESCRIPT",
+  "HTML",
+  "ANGULAR",
+  "SOLID",
+  "NODE",
+  "VUEJS",
+  "SVELTE",
+  "EXPRESS",
+  "MONGODB",
+  "POSTGRES",
+  "DOCKER",
+  "KUBERNETES",
+  "WEBPACK",
+  "VITE",
+  "TAILWIND",
+];
+
+export const params = {
+  totalWords: GAME_WORDS.length,
+  maxSkips: 3,
+  maxAllowErrors: 3,
+};
+
+// Esta función mezcla el arreglo para que siempre sea aleatorio
+const shuffleArray = (array: string[]) => {
+  return array.sort(() => Math.random() - 0.5);
+};
+
+// Esta función mezcla las letras de la palabra
+export const scrambleWord = (word: string = "") => {
+  return word
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
+};
+
+export const getInitialState = (): ScrambleWordsState => {
+  const shuffleWords = shuffleArray([...GAME_WORDS]);
+
+  return {
+    currentWord: shuffleWords[0],
+    errorCounter: 0,
+    guess: "",
+    isGameOver: false,
+    points: 0,
+    skipCounter: 0,
+    words: [...shuffleWords.slice(1)],
+  };
+};
+
+export const scrambleWordsReducer = (
+  state: ScrambleWordsState,
+  action: ScrambleWordsAction,
+) => {
+  switch (action.type) {
+    case "SET_GUESS":
+      return {
+        ...state,
+        guess: action.payload.trim().toUpperCase(),
+      };
+
+    case "HANDLE_GUESS": {
+      if (state.guess == state.currentWord) {
+        return {
+          ...state,
+          points: state.points + 1,
+          guess: "",
+          words: [...state.words.slice(1)],
+          currentWord: state.words[0],
+          scrambleWord: scrambleWord(state.words[0]),
+        };
+      }
+
+      return {
+        ...state,
+        errorCounter: state.errorCounter + 1,
+        guess: "",
+        words: [...state.words.slice(1)],
+        currentWord: state.words[0],
+        scrambleWord: scrambleWord(state.words[0]),
+        isGameOver: state.errorCounter + 1 >= params.maxAllowErrors,
+      };
+    }
+
+    case "HANDLE_SKIP":
+      return {
+        ...state,
+        skipCounter: state.skipCounter + 1,
+        currentWord: state.words[0],
+        words: [...state.words.slice(1)],
+      };
+
+    case "HANDLE_PLAY_AGAIN":
+      return action.payload;
+
+    default:
+      return state;
+  }
+};
